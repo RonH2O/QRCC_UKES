@@ -1,0 +1,22 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# User files
+*.pdf
+*.txt
+*.csv
+*.db
+qrcc_ukes.bat
+_generate_doc.bat
+temp.*
+downloaded_*
+SQL_Queries/
+*.png
