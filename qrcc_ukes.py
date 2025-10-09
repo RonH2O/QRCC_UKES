@@ -5,6 +5,7 @@ import glob
 import shutil
 from datetime import datetime
 from enum import Enum
+import requests
 
 import typer
 from typing_extensions import Annotated
@@ -337,15 +338,16 @@ def validateSonglist(file):
                 if isSongDownloaded(song):
                     song_titles.append(song)
                 else:
-                    print(f'Song: {song} needs to be downloaded')
-                    errors.append(f"{song} : NO-DOWNLOAD")    
+                    if downloadSong(songId) != True:
+                       print(f'Song: {song} needs to be downloaded')
+                       errors.append(f"{song} : NO-DOWNLOAD")    
             else:
                 errors.append(f"{song} : {songId}")
     if len(errors) > 0:
        return (False, songs, errors)
     else:
        copySongs(song_titles)
-       return (True, songs, errors)
+       return (True, songs, errors)	
     
 def validateMeetupAttach(date, personId):
     queryText = '''SELECT playlist_id FROM Meetups WHERE date = ? AND chair = ?'''
@@ -464,7 +466,6 @@ def createPlayListSongs(playlistId, songs):
             raise typer.Abort(16)      
 
 def isSongDownloaded(song):
-    print(song)
     pdfFolder = 'C:/Users/rjbyw/PythonProjects/QRCC_UKES/downloaded_pdfs/'
     song = song + ".pdf"
     file = os.path.join(pdfFolder, song)
@@ -492,6 +493,49 @@ def copySongs(songs):
         sourcePath = os.path.join(downloadsFolder, song)
         destPath = os.path.join(specialDownloadsFolder, song)
         shutil.copy(sourcePath, destPath)
+
+def downloadSong(songId):
+    queryText = '''
+                   SELECT title, songLink FROM Songs where song_id = ?
+                '''    
+    queryValue = (songId,)
+    row = db.select(DBNAME, queryText, queryValue)
+    if len(row) == 1:
+        title = row[0][0]
+        url = row[0][1]
+        return fetchPDF(title, url)
+    else:
+        return False
+    
+def fetchPDF(title, url):
+    downloadsFolder = 'C:/Users/rjbyw/PythonProjects/QRCC_UKES/downloaded_pdfs/'
+    uri = derivePdfUri(url)
+    try:
+        response = requests.get(uri, timeout=10)
+        response.raise_for_status()
+        filename = title + ".pdf"
+        filepath = os.path.join(downloadsFolder, filename)
+        with open(filepath, "wb") as f:
+            f.write(response.content)
+        fetched = True            
+    except requests.exceptions.RequestException as e:
+        print(f"Failed to download {url}: {e}")
+        fetched = False            
+    return fetched    
+
+def derivePdfUri(uri):
+    uri = uri.strip()
+    if uri.startswith('https://cloud.bytown'):
+        uri += "/download"
+    elif uri.startswith('https://www.ozbcoz'):
+        uri = uri.replace("song.php", "downloadpdf.php")
+    elif uri.startswith('https://ozbcoz'):
+        uri = uri.replace("song.php", "downloadpdf.php")
+    elif uri.endswith('.pdf'):
+        uri = uri
+    else:
+        uri =  'unknown'
+    return uri                 
         
 #-----------------------#
 # Main application loop #
