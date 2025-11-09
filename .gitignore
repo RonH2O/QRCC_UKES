@@ -21,3 +21,4 @@ downloaded_*
 SQL_Queries/
 *.png
 fetch_pdfs.py
+*.json
