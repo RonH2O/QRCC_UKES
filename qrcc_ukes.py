@@ -229,7 +229,14 @@ def create_songbook(type: Annotated[SongbookType, typer.Argument(help='Type of S
         bookType = 'SPECIAL'
     else:
         bookType = 'FULL'    
-    subprocess.run(['python', 'create_songbook.py', bookType])                   
+    subprocess.run(['python', 'create_songbook.py', bookType])  
+
+@app.command()
+def create_lyrics(song_list:Annotated[str,typer.Argument(help='File containing list of songs whose lyrics are wanted')]='playlist.txt'):
+    '''
+    Create lyric sheets for a song playlist
+    '''
+    subprocess.run(['python', 'create_lyric_sheets.py', song_list])                   
 
 #------------------------------------#
 # Support functions for the commands #
