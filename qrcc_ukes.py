@@ -221,15 +221,17 @@ def attach_playlist_to_singalong(date: Annotated[datetime,typer.Argument(formats
          print(f"[bold red]Severe SQL Error![/bold red]")   
 
 @app.command()
-def create_songbook(type: Annotated[SongbookType, typer.Argument(help='Type of Songbook')]=SongbookType.mini):
+def create_songbook(
+    book_type: Annotated[SongbookType, typer.Option(help="Type of Songbook")] = SongbookType.mini,
+    play_list: Annotated[str, typer.Option(help="File containing song playlist")] = "playlist.txt"):
     '''
     Create a clickable songbook
     '''    
-    if type == 'mini':
+    if book_type == SongbookType.mini:
         bookType = 'SPECIAL'
     else:
         bookType = 'FULL'    
-    subprocess.run(['python', 'create_songbook.py', bookType])  
+    subprocess.run(['python', 'create_songbook.py', bookType, play_list])  
 
 @app.command()
 def create_lyrics(song_list:Annotated[str,typer.Argument(help='File containing list of songs whose lyrics are wanted')]='playlist.txt'):

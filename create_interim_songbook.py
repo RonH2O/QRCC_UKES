@@ -21,7 +21,7 @@ def createTocEntry(title, page):
    LINE_LEN = 60
    return f"{title} {'.'*(LINE_LEN-2-pageLen-titleLen)} {str(page)}"
 
-def createBaseSongBook(folder, songpdf):
+def createBaseSongBook(folder, songpdf, playlist):
     #------------------------------------------------------------------------------#
     # createBaseSongBook(folder, pdf) - create a PDF songbook with no page numbers #
     # folder - the name of the folder containing the individual PDF songs          #
@@ -30,7 +30,10 @@ def createBaseSongBook(folder, songpdf):
     writer = PdfWriter()
     toc_entries = []
     current_page = 1  # PDF page numbers start at 1
-    for filename in sorted(os.listdir(folder)):
+    if len(playlist) == 0:
+        playlist = sorted(os.listdir(folder))
+    for filename in playlist:    
+    #for filename in sorted(os.listdir(folder)):
         if filename.lower().endswith(".pdf"):
             file_path = os.path.join(folder, filename)
             try:
@@ -139,7 +142,17 @@ def deleteTempFile(file):
     except FileNotFoundError:
         print(f"File: {file} not found - cannot be deleted")
     except Exception as e:
-        print(f"Unexpected Error: {e}")                
+        print(f"Unexpected Error: {e}")    
+
+def createPlaylist(playlistFile):
+    #---------------------------------------------------------------------------#
+    # create a playlist of song titles from the file containing the song titles #
+    #---------------------------------------------------------------------------#
+    playlist = []
+    with open(playlistFile) as file:
+        for song in file:
+            playlist.append(song.rstrip() + ".pdf")
+    return playlist                            
       
 #------------------#
 # Global Constants #
@@ -162,14 +175,16 @@ titlePage        = "title_page_temp.pdf"        # name of the title page PDF
 #
 if sys.argv[1] == 'SPECIAL':
     pdf_folder = 'downloaded_pdfs_special'
+    playlist = createPlaylist(sys.argv[2])
 else:
-    pdf_folder = 'downloaded_pdfs'    
+    pdf_folder = 'downloaded_pdfs' 
+    playlist = []   
 
 #
 ## Merge the song PDFs to create a 'super' PDF songbook (no page numbers)
 ## ----------------------------------------------------------------------
 #
-toc_entries = createBaseSongBook(pdf_folder, baseSongBook)
+toc_entries = createBaseSongBook(pdf_folder, baseSongBook, playlist)
 
 #
 ## Create a table of contents PDF from the entries just returned and save it as a text file

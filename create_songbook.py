@@ -44,6 +44,7 @@ def getTitleFileName():
 titleFile = 'title_page_temp.pdf'     # set name of title page PDF - deleted once songbook created
 #json_data = json.dumps(extra_songs)   # create the title page file
 bookType = sys.argv[1]
+playlistFile = sys.argv[2]
 
 #
 # create the title page
@@ -64,7 +65,7 @@ subprocess.run(['python', CREATE_TITLE_PAGE, bookType, titleFile])
 ## create the temp songbook - tile page, TOC and songs
 ## ---------------------------------------------------
 #
-subprocess.run(['python', CREATE_INTERIM_SONGBOOK, bookType])
+subprocess.run(['python', CREATE_INTERIM_SONGBOOK, bookType, playlistFile])
 
 #
 ## create the final songbook with a clickable TOC
