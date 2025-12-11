@@ -13,6 +13,8 @@ from rich import print
 
 import database as db
 
+from qrcc_ukes_common import copySongs
+
 DBNAME = 'qrcc_ukes.db'
 
 class SingalongType(str, Enum):
@@ -482,26 +484,6 @@ def isSongDownloaded(song):
         return True
     else:
         return False
-
-def copySongs(songs):
-    downloadsFolder = 'C:/Users/rjbyw/PythonProjects/QRCC_UKES/downloaded_pdfs/'
-    specialDownloadsFolder = 'C:/Users/rjbyw/PythonProjects/QRCC_UKES/downloaded_pdfs_special/'
-    #
-    ## delete all the PDF files in the special downloads folder
-    ## --------------------------------------------------------
-    #
-    files = glob.glob(f'{specialDownloadsFolder}*.pdf')  
-    for f in files:
-        os.remove(f)             
-    #
-    ## copy the songs to the special downloads folder
-    ## ----------------------------------------------
-    #
-    for song in songs:
-        song += '.pdf'
-        sourcePath = os.path.join(downloadsFolder, song)
-        destPath = os.path.join(specialDownloadsFolder, song)
-        shutil.copy(sourcePath, destPath)
 
 def downloadSong(songId):
     queryText = '''

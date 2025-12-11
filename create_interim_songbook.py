@@ -12,6 +12,8 @@ from io import BytesIO
 import os
 import sys
 
+from qrcc_ukes_common import copySongs
+
 #-----------#
 # Functions #
 #-----------#
@@ -176,6 +178,7 @@ titlePage        = "title_page_temp.pdf"        # name of the title page PDF
 if sys.argv[1] == 'SPECIAL':
     pdf_folder = 'downloaded_pdfs_special'
     playlist = createPlaylist(sys.argv[2])
+    copySongs(playlist)
 else:
     pdf_folder = 'downloaded_pdfs' 
     playlist = []   
