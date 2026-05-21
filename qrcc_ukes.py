@@ -11,6 +11,8 @@ import typer
 from typing_extensions import Annotated
 from rich import print
 
+import string
+
 import database as db
 
 from qrcc_ukes_common import copySongs
@@ -120,6 +122,9 @@ def add_meetup(date: Annotated[datetime,typer.Argument(formats=["%Y-%m-%d"], hel
     if not valid:
         print(f"[red]Person: {chair} not found in database[/red]")
         return
+    # if a song list is supplied then attempt to clean up and typos in the list
+    if song_list is not None:
+        adjustSonglist(song_list)    
     valid, songs, errors = validateSonglist(song_list)
     if not valid:
         print(f"[red]The playlist cannot be created because one or more songs are in error:[/red]")
@@ -157,6 +162,8 @@ def attach_playlist_to_meetup(date: Annotated[datetime,typer.Argument(formats=["
         elif result == 'EXISTING_PLAYLIST':
             print(f"[dark_orange]Meetup on date:{date} with chair:{chair} already has a playlist[dark_orange]")
             return
+    # attempt to clean up any typos in the song list
+    adjustSonglist(song_list)            
     valid, songs, errors = validateSonglist(song_list)
     if not valid:
         print(f"[red]The playlist cannot be created because one or more songs are in error:[/red]")
@@ -178,6 +185,9 @@ def add_singalong(date: Annotated[datetime,typer.Argument(formats=["%Y-%m-%d"], 
     '''
     date = str(date)
     date = date.split()[0]  
+    # if a song list is supplied then attempt to clean up any typos in the list
+    if song_list is not None:
+        adjustSonglist(song_list)    
     valid, songs, errors = validateSonglist(song_list)
     if not valid:
         print(f"[red]The playlist cannot be created because one or more songs are in error:[/red]")
@@ -210,6 +220,8 @@ def attach_playlist_to_singalong(date: Annotated[datetime,typer.Argument(formats
         elif result == 'EXISTING_PLAYLIST':
             print(f"[dark_orange]Singalong on date:{date} already has a playlist[dark_orange]")
             return
+    # attempt to clean up any typos in the song list
+    adjustSonglist(song_list)            
     valid, songs, errors = validateSonglist(song_list)
     if not valid:
         print(f"[red]The playlist cannot be created because one or more songs are in error:[/red]")
@@ -232,7 +244,9 @@ def create_songbook(
     if book_type == SongbookType.mini:
         bookType = 'SPECIAL'
     else:
-        bookType = 'FULL'    
+        bookType = 'FULL'  
+    # attempt to clean up any typos in the song list
+    adjustSonglist(play_list)          
     subprocess.run(['python', 'create_songbook.py', bookType, play_list])  
 
 @app.command()
@@ -240,6 +254,8 @@ def create_lyrics(song_list:Annotated[str,typer.Argument(help='File containing l
     '''
     Create lyric sheets for a song playlist
     '''
+    # attempt to clean up any typos in the song list
+    adjustSonglist(song_list)    
     subprocess.run(['python', 'create_lyric_sheets.py', song_list])                   
 
 #------------------------------------#
@@ -526,7 +542,22 @@ def derivePdfUri(uri):
         uri = uri
     else:
         uri =  'unknown'
-    return uri                 
+    return uri      
+
+def adjustSonglist(file):
+#-----------------------------------#
+# correct any typos in the songlist #
+#-----------------------------------#
+    with open(file,'r', encoding='utf-8') as f:
+       songs = f.read().splitlines()
+    songs = [adjustSong(song) for song in songs]
+
+    with open(file,'w', encoding='utf-8') as f:
+        for song in songs:
+            f.write(f"{song}\n")
+
+def adjustSong(song):
+    return " ".join(word[0].upper() + word[1:] for word in song.split())
         
 #-----------------------#
 # Main application loop #
