@@ -18,7 +18,7 @@ def getTOCPages(doc):
 # Returns : a list of lists where each entry in the outer list is a #
 #           list of the TOC entries in the corresponding TOC page   #
 #-------------------------------------------------------------------#                         
-    tocString = '...... '
+    tocString = ' ' + '.' * 10
     pageCount = 1
     tocPages = []
     while True:
